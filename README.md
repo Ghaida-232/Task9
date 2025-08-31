@@ -10,20 +10,15 @@ Specifically, the objectives included:
 - Utilizing LLMs such as **BART**, **T5**, or **LLaMA-2** for abstractive summarization.  
 - Evaluating model performance using **ROUGE metrics**.  
 - Comparing machine-generated summaries with human references.  
-- Documenting the workflow and saving outputs for reproducibility.
+- Documenting the workflow.
 
 ---
 
 ## 2. Dataset Selection
-Two widely used benchmark datasets were considered:  
-- **CNN/DailyMail** (news articles, multi-sentence summaries).  
-- **XSum** (BBC articles, single-sentence summaries).  
-
-For this task, the dataset was chosen based on:  
-- **Domain**: news reporting (suitable for real-world summarization).  
-- **Size**: large enough to fine-tune/evaluate models effectively.  
-- **Suitability**: contains both source texts and human-written reference summaries, which are essential for evaluation.
-
+The dataset used for this task is **XSum (Extreme Summarization)** from the EdinburghNLP collection on Hugging Face, which consists of BBC news articles paired with professionally written single-sentence summaries and unique IDs.  
+- **Domain**: The dataset contains BBC news articles across a wide range of domains (politics, sports, health, business, science, etc.). This makes it highly relevant for summarization tasks because news is one of the most common real-world applications of automatic summarization.  
+- **Size**: XSum is large-scale, with **~204k training samples, ~11k validation, and ~11k test examples**. The scale ensures robust evaluation of models and provides enough data for training and fine-tuning if needed. For this task we consider a pre-trained models  
+- **Suitability**: Unlike extractive-friendly datasets (e.g., CNN/DailyMail), XSum is explicitly designed for **abstractive summarization**. Each article is paired with a concise, professionally written **single-sentence summary** that often paraphrases and introduces new words (~36% novel unigrams). This makes it an excellent benchmark for testing how well LLMs can generate fluent, human-like summaries rather than copying sentences from the source.  
 ---
 
 ## 3. Data Preprocessing
@@ -113,3 +108,23 @@ For this task, the dataset was chosen based on:
 ---
 
 ## 8. Project Structure
+```
+project-root/
+│
+├── data/
+│ └── preprocessed_xsum_samples.csv
+│
+├── notebooks/
+│ └── summarization_analysis.ipynb
+│
+├── outputs/
+│ └── generated_summaries.json
+│
+├── figures/
+│ ├── rouge_scores.png
+│ └── summary_examples.png
+│
+├── requirements.txt
+│
+└── README.md
+```
