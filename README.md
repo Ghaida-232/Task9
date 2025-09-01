@@ -256,22 +256,66 @@ Here are some exapmles from the figures for better vision:
 
 ## 6. Project Structure
 ```
-project-root/
+TASK9/
 │
 ├── data/
-│ └── preprocessed_xsum_samples.csv
-│
-├── notebooks/
-│ └── summarization_analysis.ipynb
-│
-├── outputs/
-│ └── generated_summaries.json
+│ ├── preprocessed_dataset.csv # Cleaned dataset ready for training/evaluation
+│ └── xsum_tokenized_bart/ # Tokenized dataset prepared 
 │
 ├── figures/
-│ ├── rouge_scores.png
-│ └── summary_examples.png
+│ ├── rouge_scores.png # Visualization of ROUGE-1, ROUGE-2, ROUGE-L scores
+│ └── summary_examples.png # Table of example summaries (input, reference, extractive, abstractive)
 │
-├── requirements.txt
+├── outputs/
+│ ├── flan_preds_val_STRICT.json # Abstractive summaries (full JSON list)
+│ ├── flan_preds_val_STRICT.jsonl # Abstractive summaries (JSONL, line by line with resume support)
+│ ├── sbert_textrank_preds_val.json # Extractive summaries (full JSON list)
+│ └── sbert_textrank_preds_val.jsonl # Extractive summaries (JSONL, line by line with resume support)
+│
+├── summarization_analysis.ipynb # Main notebook with preprocessing, modeling, evaluation, and
 │
 └── README.md
 ```
+
+## 7. How to Run
+
+### 1. **Install requirements**
+```bash
+pip install transformers datasets sentence-transformers sumy rouge-score
+pip install pandas numpy matplotlib tqdm
+```
+(use GPU-enabled PyTorch if available for faster abstractive runs)
+
+### 2. **Open the notebook**
+
+Run summarization_analysis.ipynb from start to finish.
+
+Steps are organized: preprocessing → tokenization → extractive → abstractive → evaluation → visualization.
+
+### 3. **Outputs**
+
+- Data:
+
+data/preprocessed_dataset.csv
+
+data/xsum_tokenized_bart/
+
+- Predictions:
+
+Extractive → outputs/sbert_textrank_preds_val.json/jsonl
+
+Abstractive → outputs/flan_preds_val_STRICT.json/jsonl
+
+- Figures:
+
+ROUGE scores → figures/rouge_scores.png
+
+Example summaries → figures/summary_examples.png
+
+### 4. **Notes**
+
+If GPU is available, the full validation set (11,332 samples) is used; otherwise, a small subset.
+
+Both extractive and abstractive runs support resume — you can stop and rerun without losing progress.
+
+Evaluation is done with ROUGE-1, ROUGE-2, and ROUGE-L.
