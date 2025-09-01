@@ -37,8 +37,8 @@ Here are some examples of the dataset's document along with its summary, we noti
 --- 
 
 <p align="center">
-<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/f67bcea6-d4d8-43ef-ad01-8522bd23a63a" width="45%"/>
-<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/cce5f072-76e5-4c25-a6ab-e821372978ac" width="45%" />
+<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/f67bcea6-d4d8-43ef-ad01-8522bd23a63a" />
+<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/cce5f072-76e5-4c25-a6ab-e821372978ac"  />
 </p>
 
 <br/>
@@ -48,30 +48,75 @@ Here we analyze the distribution of document and summary lengths. We notice that
 
 ## 3. Data Preprocessing
 
+<img width="2048" height="1303" alt="image" src="https://github.com/user-attachments/assets/154e464b-f34b-4d28-b79c-5603174e2795" />
 
-- Removed HTML tags, escape characters, and special symbols.  
-- Normalized whitespace and truncated overly long articles to improve efficiency.  
-- Applied **tokenization** using the target model’s tokenizer (e.g., `BartTokenizer`, `T5Tokenizer`).  
-- Stored cleaned samples into a structured CSV for reproducibility.
+
+The cleaning process removed HTML artifacts, control characters and all whitespace, resulting in a more standardized dataset that is easier for tokenization and modeling. After preprocessing, the dataset kept its full scale with 204,045 training, 11,332 validation, and 11,334 test samples. We successfully created new fields (document_clean, summary_clean) while retaining the original text, which ensures both reproducibility and flexibility for further experiments. 
+
+--- 
+<img width="2048" height="1291" alt="image" src="https://github.com/user-attachments/assets/9b58c96b-0fcc-48fd-8f0a-8125ec5e3ff9" />
+
+<br/>
+<br/>
+
+- The tokenizer successfully converted both documents and summaries into token IDs using the BART tokenizer.
+- A maximum source length of 1024 tokens was set to capture long input articles while avoiding memory issues.
+- A maximum target length of 64 tokens was chosen, since XSum summaries are short (≈1 sentence).
+- Truncation and padding ensured consistent sequence lengths across batches.
+- Tokenization preserved dataset scale: 204,045 training, 11,332 validation, and 11,334 test samples were fully processed.
+- This step produced a clean, standardized dataset ready for model training and evaluation.
 
 ---
 
-## 4. Methodology
+## 4. Summarization Approaches
+<img width="2066" height="677" alt="image" src="https://github.com/user-attachments/assets/261857a2-afd2-4b30-9ecf-751af18fea99" />
+
+<br/>
+<br/>
+
+In this step, we prepare the **validation dataset** for summarization and evaluation.  
+- GPU availability is checked to decide the batch size.  
+- The full validation split (11,332 samples) is used if a GPU is available; otherwise a smaller subset of 200 samples is selected for efficiency to run on CPU.  
+- The cleaned validation set provides the **documents** (inputs) and **summaries** (ground-truth references) which will later be used for generating model predictions and computing ROUGE scores.  
+- A sample document and its reference summary are printed for verification.
 
 ### 4.1 Extractive Summarization
-- Implemented **TextRank** and embedding-based ranking methods.  
-- Extracted top-ranked sentences as summaries.  
-- Pros: fast, unsupervised, no model training needed.  
-- Limitation: lacks paraphrasing and abstraction.
+<img width="2075" height="1287" alt="image" src="https://github.com/user-attachments/assets/d8345da1-e50b-46a8-98b1-c319675ea0d5" />
+
+<br/>
+<br/>
+
+
+**How it works**  
+- **Sentence Segmentation (Sumy Tokenizer):** Each document is segmented into individual sentences using Sumy’s tokenizer.  
+- **Embed with SBERT:** Each sentence is converted into a vector using **all-MiniLM-L6-v2**, a small but powerful SBERT model.  
+- **Build a similarity graph:** Compare every sentence with every other sentence using SBERT embeddings. The more similar two sentences are, the stronger the link between them in the graph.  
+- **Rank with TextRank:** Run the PageRank algorithm on this graph. Sentences that are strongly connected to many others get higher scores. The top-scoring sentence is considered the best summary candidate.  
+- **Choose the summary:** Among the top-ranked sentences, pick one that has a reasonable length (6–60 words) and appears early in the text. This helps avoid fragments or unimportant trailing sentences.  
+- **Fallbacks included:** If the article is too short or oddly formatted, we safely fall back to the first sentence with punctuation.  
+- **Save outputs:** Results are written to JSONL (line by line) and JSON (full list), with resume support in case the process is interrupted.
+
+**Run result**  
+- Completed the entire validation set (**11,332 samples**).  
+- Saved to:  
+  - `outputs/sbert_textrank_preds_val.jsonl`  
+  - `outputs/sbert_textrank_preds_val.json`
+
+**Insights**  
+- **Unsupervised & lightweight**: No training required, easy to run even on CPU.  
+- **Semantic advantage**: Using SBERT embeddings makes the method aware of meaning, not just word overlap.  
+- **Clean one-liners**: Outputs are short, headline-like summaries that often align well with ROUGE-1.  
+- **Extractive**: It copies an existing sentence — no paraphrasing, no fusion of multiple ideas.  
+- **Weaker on ROUGE-2/L**: Abstractive models usually beat it on capturing fluency and varied phrasing.  
+
+
+
 
 ### 4.2 Abstractive Summarization
 - Used pretrained **LLMs** (e.g., `facebook/bart-large-cnn`, `t5-base`, `meta-llama/Llama-2-7b-chat-hf`).  
 - Applied **prompt engineering** to guide summarization style and length.  
 - Generated concise summaries beyond direct sentence extraction.
 
-### 4.3 Optional Enhancements
-- Explored **LangChain pipelines** for structured summarization prompts.  
-- Considered **RAG (Retrieval-Augmented Generation)** for domain-specific summarization.
 
 ---
 
