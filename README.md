@@ -272,7 +272,7 @@ TASK9/
 │ ├── sbert_textrank_preds_val.json # Extractive summaries (full JSON list)
 │ └── sbert_textrank_preds_val.jsonl # Extractive summaries (JSONL, line by line with resume support)
 │
-├── summarization_analysis.ipynb # Main notebook with preprocessing, modeling, evaluation, and
+├── summarization_analysis.ipynb # Main notebook with preprocessing, modeling, evaluation
 │
 └── README.md
 ```
