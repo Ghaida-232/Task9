@@ -15,13 +15,40 @@ Specifically, the objectives included:
 ---
 
 ## 2. Dataset Selection
+
+<img width="2077" height="953" alt="image" src="https://github.com/user-attachments/assets/669325b3-357e-459c-a553-125467301a80" />
+
+<br/>
+<br/>
+
 The dataset used for this task is **XSum (Extreme Summarization)** from the EdinburghNLP collection on Hugging Face, which consists of BBC news articles paired with professionally written single-sentence summaries and unique IDs.  
 - **Domain**: The dataset contains BBC news articles across a wide range of domains (politics, sports, health, business, science, etc.). This makes it highly relevant for summarization tasks because news is one of the most common real-world applications of automatic summarization.  
 - **Size**: XSum is large-scale, with **~204k training samples, ~11k validation, and ~11k test examples**. The scale ensures robust evaluation of models and provides enough data for training and fine-tuning if needed. For this task we consider a pre-trained models  
-- **Suitability**: Unlike extractive-friendly datasets (e.g., CNN/DailyMail), XSum is explicitly designed for **abstractive summarization**. Each article is paired with a concise, professionally written **single-sentence summary** that often paraphrases and introduces new words (~36% novel unigrams). This makes it an excellent benchmark for testing how well LLMs can generate fluent, human-like summaries rather than copying sentences from the source.  
+- **Suitability**: XSum is explicitly designed for **abstractive summarization**. Each article is paired with a concise, professionally written **single-sentence summary** that often paraphrases and introduces new words (~36% novel unigrams). That’s why XSum is more challenging and better suited for evaluating abstractive LLMs than extractive methods.  
 ---
 
+<img width="2069" height="738" alt="image" src="https://github.com/user-attachments/assets/30d8f589-36c7-4f86-9657-5a1cbbfeeabb" />
+
+<br/>
+<br/>
+
+Here are some examples of the dataset's document along with its summary, we notice that the summary tends to be more abstractive type than extractive.
+
+--- 
+
+<p align="center">
+<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/f67bcea6-d4d8-43ef-ad01-8522bd23a63a" width="45%"/>
+<img width="571" height="455" alt="image" src="https://github.com/user-attachments/assets/cce5f072-76e5-4c25-a6ab-e821372978ac" width="45%" />
+</p>
+
+<br/>
+<br/>
+
+Here we analyze the distribution of document and summary lengths. We notice that the documents are relatively long (average ≈ 375 words or tokens) while the summaries are very short and consistent (average ≈ 21 tokens). This highlights that the dataset is abstractive, since each summary converts a long input article into a single concise sentence instead of directly copying the exact words from the document.
+
 ## 3. Data Preprocessing
+
+
 - Removed HTML tags, escape characters, and special symbols.  
 - Normalized whitespace and truncated overly long articles to improve efficiency.  
 - Applied **tokenization** using the target model’s tokenizer (e.g., `BartTokenizer`, `T5Tokenizer`).  
