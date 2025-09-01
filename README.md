@@ -6,11 +6,11 @@ The goal of this task was to explore **automatic text summarization** using two 
 - **Abstractive summarization**: generating new sentences using **pretrained Large Language Models (LLMs)**.  
 
 Specifically, the objectives included:  
-- Applying both extractive and abstractive methods.  
-- Utilizing LLMs such as **BART**, **T5**, or **LLaMA-2** for abstractive summarization.  
-- Evaluating model performance using **ROUGE metrics**.  
-- Comparing machine-generated summaries with human references.  
-- Documenting the workflow.
+- Apply both extractive and abstractive summarization techniques.
+- Utilize pretrained large language models (LLMs) for abstractive summarization.
+- Evaluate model performance using standard metrics.
+- Compare model-generated summaries to human-written references.
+- Save the model and document the process in a notebook and README.md.
 
 ---
 
@@ -153,65 +153,108 @@ In this step, we prepare the **validation dataset** for summarization and evalua
 ---
 
 ## 5. Evaluation
+<img width="2071" height="1057" alt="image" src="https://github.com/user-attachments/assets/f24bae1f-158a-4629-870a-bfdf4b2307ea" />
+
+<br/>
+<br/>
+
+First, we load the generated summaries for both approaches:  
+- **Extractive outputs** from `sbert_textrank_preds_val.json/jsonl`.  
+- **Abstractive outputs** from `flan_preds_val_STRICT.json/jsonl`.  
+
+These files contain the predicted summaries for the validation set.  
+We then align them with the reference summaries from the dataset to ensure all three lists (documents, references, and predictions) have the same size (**N = 11,332**).  This prepares the data for evaluation using ROUGE and qualitative comparison.
 
 ### Metrics
-- **ROUGE-1**: unigram overlap.  
-- **ROUGE-2**: bigram overlap.  
-- **ROUGE-L**: longest common subsequence.  
+<img width="2071" height="832" alt="image" src="https://github.com/user-attachments/assets/31768199-7513-46a8-bb9f-82e6941fe241" />
 
-### Process
-- Compared generated summaries against human references.  
-- Visualized results in **bar charts** and **comparison tables**.  
-- Stored outputs in `outputs/generated_summaries.json`.  
+<br/>
+<br/>
 
-### Example Output (Illustrative)
-**Input text (excerpt):**  
-> "Former Premier League footballer Sam Sodje has appeared in court alongside three brothers accused of charity fraud."
+To measure the quality of generated summaries, we use the **ROUGE metric** (Recall-Oriented Understudy for Gisting Evaluation).  
+Specifically:  
+- **ROUGE-1:** Overlap of unigrams (single words).  
+- **ROUGE-2:** Overlap of bigrams (two-word sequences).  
+- **ROUGE-L:** Longest common subsequence (measures fluency and structure).
 
-**Reference summary:**  
-> "Former footballer Sam Sodje has appeared in court over fraud charges."
+**Workflow**  
+1. Define a helper function `avg_rouge()` to calculate average ROUGE scores across all validation samples.  
+2. Compare predictions against reference summaries for both extractive and abstractive methods.  
+3. Store results in a dataframe for easy comparison.
 
-- **Extractive summary:** selected first sentence directly.  
-- **Abstractive summary:** "Ex-Premier League player Sam Sodje faces fraud trial with brothers."
+**Results (Validation Set, N=11,332)**  
 
----
+| Method                     | ROUGE-1 | ROUGE-2 | ROUGE-L |
+|-----------------------------|---------|---------|---------|
+| Extractive (SBERT TextRank) | 0.1834  | 0.0260  | 0.1312  |
+| Abstractive (FLAN-T5)       | 0.3536  | 0.1338  | 0.2803  |
 
-## 6. Results & Visualizations
 
-- **Figure 1: ROUGE Scores Comparison**  
-<img width="750" height="420" alt="rouge_scores" src="figures/rouge_scores.png" />  
-<br/>  
-*The bar chart above compares ROUGE-1, ROUGE-2, and ROUGE-L scores across extractive and abstractive methods.*  
+**Insights**  
+- **FLAN-T5 (abstractive)** clearly outperforms SBERT TextRank across all ROUGE metrics.  
+- Higher **ROUGE-2** indicates that abstractive summaries capture phrase-level meaning more accurately.  
+- Higher **ROUGE-L** suggests that abstractive summaries better preserve the sequence and overall structure of the reference summaries.  
+- **SBERT TextRank** remains a useful **baseline**, but its lower scores reflect the limitation of copying sentences directly, especially since the dataset used (XSum) is designed for abstractive summaries.
+  
 
-**Insights:**  
-- Abstractive models (BART, T5) consistently outperformed extractive baselines in ROUGE-1 and ROUGE-2.  
-- ROUGE-L scores indicated that abstractive models better preserved sequence-level relevance.  
-- Extractive methods scored lower but provided stable baselines for comparison.  
+### Visualization of ROUGE Scores
 
----
+The following figures compare **Extractive (SBERT TextRank)** and **Abstractive (FLAN-T5)** summarization methods using ROUGE metrics:
 
-- **Figure 2: Example Summaries**  
-<img width="750" height="420" alt="summary_examples" src="figures/summary_examples.png" />  
-<br/>  
-*The figure shows qualitative comparisons of input, human-written reference, extractive summary, and abstractive summary.*  
+- **Figure 1: ROUGE-1 (F1)**  
+  <img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/7c1b35d4-311e-4e68-8582-97272945cb26" />
+  
+  *Abstractive FLAN-T5 achieves a score of 0.354 compared to 0.184 for extractive, showing stronger unigram overlap with reference summaries.*
 
-**Insights:**  
-- Extractive summaries often repeated long sentences from the source.  
-- Abstractive models generated **concise, paraphrased outputs** closer to human style.  
-- The qualitative difference highlighted the advantage of LLMs in producing natural and readable summaries.
+<br/>
 
----
+- **Figure 2: ROUGE-2 (F1)**  
+  <img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/beba21d0-88c3-401e-b365-3ec550a5e54d" />
+  
+  *FLAN-T5 again outperforms extractive with 0.134 vs 0.025, demonstrating better capture of phrase-level meaning.*
 
-## 7. Key Outcomes & Insights
-- **Extractive methods** produced grammatically correct but sometimes lengthy summaries.  
-- **Abstractive LLMs** generated concise and human-like paraphrases.  
-- **BART** and **T5** achieved higher ROUGE scores compared to simple extractive baselines.  
-- Visual comparisons highlighted that abstractive models captured meaning better, while extractive models remained closer to the original text.  
-- ROUGE-L scores confirmed that abstractive models maintained sequence relevance with fewer words.  
+  <br/>
 
----
+- **Figure 3: ROUGE-L (F1)**  
+<img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/ca5a5fc2-4ee4-448e-9b61-170c72527491" />
 
-## 8. Project Structure
+  *FLAN-T5 achieves 0.280 compared to 0.133 for extractive, indicating better preservation of overall sequence and structure.*
+
+  <br/>
+
+**Insights**  
+- The bar charts confirm that **abstractive summarization consistently outperforms extractive summarization** across all ROUGE metrics.  
+- The gap is especially large for **ROUGE-2**, highlighting the abstractive model’s ability to generate coherent phrases rather than just selecting words.  
+- Extractive summarization still provides a **baseline**, but the XSum dataset favors abstractive models since its reference summaries are highly abstractive.
+
+
+### Example Output 
+To better understand the difference between methods, we compare **Input documents**, **Reference (human) summaries**, **Extractive (SBERT-TextRank)** outputs, and **Abstractive (FLAN-T5)** outputs on random validation samples.
+
+<img width="2048" height="1286" alt="image" src="https://github.com/user-attachments/assets/8a644579-7b21-42fa-b2d9-6e0547244edc" />
+<img width="2048" height="1260" alt="image" src="https://github.com/user-attachments/assets/1e9d6e46-66be-45b4-8b37-c3ade53970de" />
+
+<br/>
+<br>
+Here are some exapmles from the figures for better vision:
+
+| id | Input (truncated) | Reference | Extractive | Abstractive |
+|----|-------------------|-----------|------------|-------------|
+| 0  | The ex-Reading defender denied fraudulent trading charges relating to the Sodje Sports Foundation ... | Former Premier League footballer Sam Sodje has appeared in court alongside three brothers accused of charity fraud. | The ex-Reading defender denied fraudulent trading charges relating to the Sodje Sports Foundation – a charity to raise money for Nigerian sport. | Former Reading defender Sam Sodje has appeared in court charged with fraud. |
+| 1  | Middlesex hope to have the Australian back for their T20 Blast game ... Adam Voges ... injured calf muscle ... | Middlesex batsman Adam Voges will be out until August after suffering a torn calf muscle in his right leg. | Voges retired from international cricket in February with a Test batting average of 61.87 from 31 innings, second only to Australian great Sir Donald Bradman's career average of 99.94 from 52 Tests. | Middlesex’s Adam Voges has been ruled out for the rest of the season with a hamstring injury. |
+| 2  | Duchess of Cambridge featured in Vogue magazine ... 100 years anniversary ... | The Duchess of Cambridge will feature on the cover of British Vogue to mark the magazine’s centenary. | He said the images also encapsulated what Vogue had done over the past 100 years - "to pair the best photographers with the great personalities of the day, in order to reflect broader shifts in culture and society" | The Duchess of Cambridge is to feature in British Vogue’s 100th issue for the first time. |
+| 3  | Google hires creator of 4chan website ... | Google has hired the creator of one of the web’s most notorious forums – 4chan. | He added: "I can't wait to contribute my own experience from a dozen years of building online communities, and to begin the next chapter of my career at such an incredible company." | Google has appointed a former administrator of the controversial 4chan website as its new chief executive. |
+| 4  | Two teenagers charged in connection with Belfast car crash involving police officers ... | Two teenagers have been charged in connection with an incident in west Belfast in which a car collided with two police vehicles. | A man, aged 19, and a boy, aged 16, have been charged with six counts of aggravated vehicle taking. | Two teenagers have been charged with aggravated vehicle taking after two police officers were injured in a car crash in Belfast. |
+
+**Insights**  
+- **Reference summaries** are short, highly abstractive and paraphrase the source.  
+- **Extractive outputs** tend to copy long factual sentences directly, sometimes keeping unnecessary details.  
+- **Abstractive outputs** are much closer to the reference style: concise, rephrased and often better aligned with the XSum dataset’s abstractive nature.  
+- This confirms why abstractive models like FLAN-T5 outperform extractive methods.
+
+
+
+## 6. Project Structure
 ```
 project-root/
 │
