@@ -113,9 +113,41 @@ In this step, we prepare the **validation dataset** for summarization and evalua
 
 
 ### 4.2 Abstractive Summarization
-- Used pretrained **LLMs** (e.g., `facebook/bart-large-cnn`, `t5-base`, `meta-llama/Llama-2-7b-chat-hf`).  
-- Applied **prompt engineering** to guide summarization style and length.  
-- Generated concise summaries beyond direct sentence extraction.
+
+<img width="2074" height="1298" alt="image" src="https://github.com/user-attachments/assets/e6568573-ca7f-40cc-b867-2968da92f639" />
+
+
+<img width="2074" height="1300" alt="image" src="https://github.com/user-attachments/assets/c28d2ead-b7c6-4fd6-90e7-98099da75eed" />
+
+
+<br/>
+<br/>
+
+**How it works**  
+- **Model choice:** Used **google/flan-t5-base**, a pretrained LLM fine-tuned for instruction following and summarization.  
+- **Tokenizer & pipeline:** Hugging Face `AutoTokenizer` and `AutoModelForSeq2SeqLM` were loaded into a `text2text-generation` pipeline.  
+- **Few-shot prompting:** Designed a custom prompt with **two example document–summary pairs** to guide the model. The prompt instructs the model to always produce a **single factual sentence** answering *who, what, when* (and why if present).  
+- **Generate summaries:** For each validation document, the few-shot prompt is prepended, then the document is appended, and the model generates a summary.  
+- **Decoding settings:** Used beam search (`num_beams=6`) with constraints like `no_repeat_ngram_size=3` and `length_penalty=1.05` to improve fluency and avoid repetition. Output length was capped at 45 tokens to match XSum’s short single-sentence style.  
+- **Save outputs:** Summaries are written both as JSONL (line by line) and JSON (full list). Resume logic ensures the run can continue from where it left off.  
+
+**Run result**  
+- Completed the entire validation set (**11,332 samples**) in ~2.5 hours on GPU.  
+- Saved to:  
+  - `outputs/flan_preds_val_STRICT.jsonl`  
+  - `outputs/flan_preds_val_STRICT.json`  
+- Example predictions include fluent one-liners such as:  
+  - *“Former Reading defender Sam Sodje has appeared in court charged with fraud.”*  
+  - *“Middlesex’s Adam Voges has been ruled out for the rest of the season with a hamstring injury.”*
+
+**Insights**  
+- **Truly abstractive:** Unlike extractive methods, FLAN-T5 rewrites the input into fluent, human-like sentences.  
+- **Prompt engineering** Few-shot examples guide the model to consistently produce short, factual summaries.  
+- **High quality outputs:** Summaries often resemble reference style in the XSum dataset, showing strong generalization.  
+- **More compute-heavy:** Takes longer to run (hours vs minutes for extractive). Requires GPU for practical speed.  
+- **Possible hallucination (invention):** LLMs may sometimes invent details, so factual grounding is important.  
+- **Best use case:** Produces high-quality abstractive baselines and can be extended to larger FLAN-T5 variants or fine-tuned for domain-specific summarization.
+
 
 
 ---
